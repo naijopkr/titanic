@@ -124,7 +124,8 @@ output['PassengerId'] = df_test['PassengerId']
 output['Survived'] = predictions
 
 output.head()
-output.to_csv('data/2020061515_titanic_survivor.csv', encoding='utf-8', index=False)
-
-from sklearn.metrics import classification_report
-classification_report(output)
+output.to_csv(
+    'data/2020061515_titanic_survivor.csv',
+    encoding='utf-8',
+    index=False
+)
