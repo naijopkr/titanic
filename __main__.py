@@ -1,131 +1,65 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+import eda
+import models
+import metrics
+from sklearn.model_selection import train_test_split
 
 df = pd.read_csv('data/train.csv')
-df_test = pd.read_csv('data/test.csv')
-df_test.head()
-print(df.head())
-
-# EDA
-sns.heatmap(
-    df.isnull(),
-    yticklabels=False,
-    cbar=False,
-    cmap='viridis'
-)
-
-sns.set_style('whitegrid')
-sns.countplot(
-    x='Survived',
-    hue='Sex',
-    data=df,
-    palette='RdBu_r'
-)
-
-sns.countplot(
-    x='Survived',
-    hue='Pclass',
-    data=df,
-    palette='rainbow'
-)
-
-sns.distplot(
-    df['Age'].dropna(),
-    kde=False,
-    color='darkred',
-    bins=30
-)
-
-sns.countplot(
-    x='SibSp',
-    data=df
-)
-
-sns.distplot(
-    df['Fare'],
-    color='green',
-    kde=False,
-    bins=40
-)
+# df_test = pd.read_csv('data/test.csv')
 
 # Data Cleaning
+eda.prepare_data(df)
 
-sns.boxplot(
-    x='Pclass',
-    y='Age',
-    data=df,
-    palette='winter'
+
+# df_test['Fare'].head()
+# df_test.at[152, 'Fare'] =  df_test['Fare'].mean()
+
+
+X = df.drop('Survived', axis=1)
+y = df['Survived']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.3,
+    random_state=101
 )
 
-first_class_age = df[df['Pclass'] == 1]['Age'].mean()
-second_class_age = df[df['Pclass'] == 2]['Age'].mean()
-third_class_age = df[df['Pclass'] == 3]['Age'].mean()
 
-def impute_age(cols):
-    Age = cols[0]
-    Pclass = cols[1]
+y_lr = models.logistic_regression(X_train, y_train, X_test) # accuracy: 0.7
+print('LR')
+metrics.print_cm(y_test, y_lr)
+metrics.print_cr(y_test, y_lr)
+print()
 
-    if pd.isnull(Age):
+y_dtree = models.decision_tree(X_train, y_train, X_test) # accuracy: 0.63
+print('DTree')
+metrics.print_cm(y_test, y_dtree)
+metrics.print_cr(y_test, y_dtree)
 
-        if Pclass == 1:
-            return first_class_age
+y_knn = models.knn(X_train, y_train, X_test) # accuracy: 0.59
+print('KNN')
+metrics.print_cm(y_test, y_knn)
+metrics.print_cr(y_test, y_knn)
+print()
 
-        elif Pclass == 2:
-            return second_class_age
 
-        else:
-            return third_class_age
 
-    else:
-        return Age
 
-df['Age'] = df[['Age', 'Pclass']].apply(impute_age, axis=1)
-df_test['Age'] = df_test[['Age', 'Pclass']].apply(impute_age, axis=1)
 
-df.drop('Cabin', axis=1, inplace=True)
-df_test.drop('Cabin', axis=1, inplace=True)
 
-df.head()
-df.dropna(inplace=True)
-df_test['Fare'].head()
-df_test.at[152, 'Fare'] =  df_test['Fare'].mean()
 
-df.info()
-df_test.info()
 
-sex = pd.get_dummies(df['Sex'], drop_first=True)
-embark = pd.get_dummies(df['Embarked'], drop_first=True)
-df.drop(['Sex', 'Embarked', 'Name', 'Ticket'], axis=1, inplace=True)
-df = pd.concat([df, sex, embark], axis=1)
 
-sex_test = pd.get_dummies(df_test['Sex'], drop_first=True)
-embark_test = pd.get_dummies(df_test['Embarked'], drop_first=True)
-df_test.drop(['Sex', 'Embarked', 'Name', 'Ticket'], axis=1, inplace=True)
-df_test = pd.concat([df_test, sex_test, embark_test], axis=1)
 
-df.head()
-df_test.head()
+# output = pd.DataFrame()
+# output['PassengerId'] = df_test['PassengerId']
+# output['Survived'] = predictions
 
-# Building logistic regression model
-
-X_train = df.drop('Survived', axis=1)
-y_train = df['Survived']
-
-from sklearn.linear_model import LogisticRegression
-
-logmodel = LogisticRegression()
-logmodel.fit(X_train, y_train)
-
-predictions = logmodel.predict(df_test)
-
-output = pd.DataFrame()
-output['PassengerId'] = df_test['PassengerId']
-output['Survived'] = predictions
-
-output.head()
-output.to_csv(
-    'data/2020061515_titanic_survivor.csv',
-    encoding='utf-8',
-    index=False
-)
+# output.head()
+# output.to_csv(
+#     'data/2020061515_titanic_survivor.csv',
+#     encoding='utf-8',
+#     index=False
+# )
