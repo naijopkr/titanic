@@ -1,64 +1,5 @@
-import seaborn as sns
 import pandas as pd
-
 from pandas import DataFrame
-
-sns.set_style('whitegrid')
-
-# EDA
-def check_null(df: DataFrame):
-    sns.heatmap(
-        df.isnull(),
-        yticklabels=False,
-        cbar=False,
-        cmap='viridis'
-    )
-
-def check_na(df: DataFrame):
-    sns.heatmap(
-        df.isna(),
-        yticklabels=False,
-        cbar=False,
-        cmap='viridis'
-    )
-
-def countplot(
-    df: DataFrame,
-    x='Survived',
-    hue=None,
-    palette=None
-):
-    sns.countplot(
-        x=x,
-        data=df,
-        hue=hue,
-        palette=palette
-    )
-
-
-def feat_dist(df: DataFrame, feat='Age'):
-    sns.distplot(
-        df[feat].dropna(),
-        kde=False,
-        color='darkred',
-        bins=30
-    )
-
-
-def feat_count(df: DataFrame, feat='SibSp'):
-    sns.countplot(
-        x='SibSp',
-        data=df
-    )
-
-
-def feat_boxplot(df: DataFrame, x='Pclass', y='Age'):
-    sns.boxplot(
-        x=x,
-        y=y,
-        data=df,
-        palette='winter'
-    )
 
 
 def impute_age(cols, pclass=(0,0,0)):
@@ -96,9 +37,9 @@ def get_age_avg(df: DataFrame):
 
 def prepare_data(df: DataFrame):
     get_age_avg(df)
-    df.drop('Cabin', axis=1, inplace=True)
 
     sex = pd.get_dummies(df['Sex'], drop_first=True)
     embark = pd.get_dummies(df['Embarked'], drop_first=True)
-    df.drop(['Sex', 'Embarked', 'Name', 'Ticket'], axis=1, inplace=True)
-    df = pd.concat([df, sex, embark], axis=1)
+    clean_data = df.drop(['Sex', 'Embarked', 'Name', 'Ticket', "Cabin", "PassengerId"], axis=1)
+
+    return  pd.concat([clean_data, sex, embark], axis=1)

@@ -1,65 +1,34 @@
 import pandas as pd
+import seaborn as sns
 
-import eda
-import models
-import metrics
-from sklearn.model_selection import train_test_split
+df = pd.read_csv('data/clean_train.csv')
 
-df = pd.read_csv('data/train.csv')
-# df_test = pd.read_csv('data/test.csv')
-
-# Data Cleaning
-eda.prepare_data(df)
-
-
-# df_test['Fare'].head()
-# df_test.at[152, 'Fare'] =  df_test['Fare'].mean()
-
+from sklearn.model_selection import train_test_split as tts
 
 X = df.drop('Survived', axis=1)
 y = df['Survived']
 
-X_train, X_test, y_train, y_test = train_test_split(
+X_train, X_test, y_train, y_test = tts(
     X,
     y,
     test_size=0.3,
     random_state=101
 )
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-y_lr = models.logistic_regression(X_train, y_train, X_test) # accuracy: 0.7
-print('LR')
-metrics.print_cm(y_test, y_lr)
-metrics.print_cr(y_test, y_lr)
-print()
+rfc = RandomForestClassifier(n_estimators=200)
+rfc.fit(X_train, y_train)
 
-y_dtree = models.decision_tree(X_train, y_train, X_test) # accuracy: 0.63
-print('DTree')
-metrics.print_cm(y_test, y_dtree)
-metrics.print_cr(y_test, y_dtree)
-
-y_knn = models.knn(X_train, y_train, X_test) # accuracy: 0.59
-print('KNN')
-metrics.print_cm(y_test, y_knn)
-metrics.print_cr(y_test, y_knn)
-print()
+y_pred = rfc.predict(X_test)
+accuracy_score(y_test, y_pred)
 
 
+from sklearn.cluster import KMeans
 
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(X_train, y_train)
 
-
-
-
-
-
-
-# output = pd.DataFrame()
-# output['PassengerId'] = df_test['PassengerId']
-# output['Survived'] = predictions
-
-# output.head()
-# output.to_csv(
-#     'data/2020061515_titanic_survivor.csv',
-#     encoding='utf-8',
-#     index=False
-# )
+y_pred = kmeans.predict(X_test)
+accuracy_score(y_test, y_pred)
